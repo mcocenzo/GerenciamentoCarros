@@ -1,4 +1,5 @@
-﻿using GerenciamentoDeCarrosAPI.Models;
+﻿using GerenciamentoCarros.DTOs;
+using GerenciamentoDeCarrosAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
@@ -31,8 +32,17 @@ namespace GerenciamentoDeCarrosAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Carro>> PostCarro(Carro carro)
+        public async Task<ActionResult<Carro>> PostCarro(CarroPostDto carroDto)
         {
+
+            var carro = new Carro
+            {
+                Marca = carroDto.Marca,
+                Modelo = carroDto.Modelo,
+                Ano = carroDto.Ano,
+                Preco = carroDto.Preco
+            };
+
             if (carro.Ano < 1900 || carro.Preco < 0 || string.IsNullOrWhiteSpace(carro.Marca) || string.IsNullOrWhiteSpace(carro.Modelo))
                 return BadRequest("Dados inválidos.");
 
@@ -42,11 +52,9 @@ namespace GerenciamentoDeCarrosAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCarro(int id, Carro carro)
+        public async Task<IActionResult> PutCarro(int id, CarroUpdateDto carroDto)
         {
-            if (id != carro.Id) return BadRequest();
-
-            _context.Entry(carro).State = EntityState.Modified;
+            _context.Entry(carroDto).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();
         }

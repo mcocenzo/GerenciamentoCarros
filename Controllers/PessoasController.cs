@@ -1,4 +1,5 @@
-﻿using GerenciamentoDeCarrosAPI.Models;
+﻿using GerenciamentoCarros.Dtos;
+using GerenciamentoDeCarrosAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,12 +37,18 @@ namespace GerenciamentoDeCarrosAPI.Controllers
 
         // POST: api/pessoas
         [HttpPost]
-        public async Task<ActionResult<Pessoa>> PostPessoa(Pessoa pessoa)
+        public async Task<ActionResult<Pessoa>> PostPessoa(PessoaPostDto pessoaDto)
         {
             // Validação para garantir que o email seja único
-            var emailExistente = await _context.Pessoas.AnyAsync(p => p.Email == pessoa.Email);
+            var emailExistente = await _context.Pessoas.AnyAsync(p => p.Email == pessoaDto.Email);
             if (emailExistente)
                 return BadRequest("O email fornecido já está em uso.");
+
+            var pessoa = new Pessoa
+            {
+                Nome = pessoaDto.Nome,
+                Email = pessoaDto.Email
+            };
 
             _context.Pessoas.Add(pessoa);
             await _context.SaveChangesAsync();
@@ -51,18 +58,15 @@ namespace GerenciamentoDeCarrosAPI.Controllers
 
         // PUT: api/pessoas/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPessoa(int id, Pessoa pessoa)
+        public async Task<IActionResult> PutPessoa(int id, PessoaUpdateDto pessoaDto)
         {
-            if (id != pessoa.Id)
-                return BadRequest("ID informado não corresponde ao ID da pessoa.");
-
             var pessoaExistente = await _context.Pessoas.FindAsync(id);
             if (pessoaExistente == null)
                 return NotFound($"Pessoa com ID {id} não encontrada.");
 
             // Atualizar apenas os campos relevantes
-            pessoaExistente.Nome = pessoa.Nome;
-            pessoaExistente.Email = pessoa.Email;
+            pessoaExistente.Nome = pessoaDto.Nome;
+            pessoaExistente.Email = pessoaDto.Email;
 
             _context.Entry(pessoaExistente).State = EntityState.Modified;
             await _context.SaveChangesAsync();
